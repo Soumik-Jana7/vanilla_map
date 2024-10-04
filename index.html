@@ -91,7 +91,12 @@
             console.log('Sending data:', { lat, lng });
 
             // Send the lat, lng data back to Retool using postMessage
-            window.parent.postMessage({ lat, lng }, "*");
+            console.log('Current origin:', window.location.origin);
+            console.log('Parent origin:', window.parent.location.origin);
+
+            // Send a message to the parent (Retool) with specific origin
+            window.parent.postMessage({ lat, lng }, window.parent.location.origin);
+
         });
 
       }
