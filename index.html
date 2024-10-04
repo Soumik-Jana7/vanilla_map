@@ -78,18 +78,22 @@
         // Handle clicks on the map and place a marker
         let marker;
         map.addListener('click', (e) => {
-          const lat = e.latLng.lat();
-          const lng = e.latLng.lng();
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
 
-          if (marker) marker.setMap(null);
-          marker = new google.maps.Marker({
-            position: { lat, lng },
-            map: map,
-          });
+            if (marker) marker.setMap(null);
+                marker = new google.maps.Marker({
+                position: { lat, lng },
+                map: map,
+            });
 
-          // Send the lat, lng data back to Retool using postMessage
-          window.parent.postMessage({ lat, lng }, "*");
+            // Debug: Log the data to the browser console before sending the message
+            console.log('Sending data:', { lat, lng });
+
+            // Send the lat, lng data back to Retool using postMessage
+            window.parent.postMessage({ lat, lng }, "*");
         });
+
       }
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQB4j28piebvwsV_TT0vnrCy_qLQqfpY4&libraries=places&callback=initMap" async defer></script>
