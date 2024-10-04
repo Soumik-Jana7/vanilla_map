@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Maps with Search and Markers</title>
+    <style>
+      #map {
+        height: 100%;
+      }
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #pac-input {
+        margin-top: 10px;
+        padding: 5px;
+        font-size: 16px;
+        background-color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <input id="pac-input" type="text" placeholder="Search Box">
+    <div id="map"></div>
+
+    <script>
+      function initMap() {
+        const map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 8,
+          center: { lat: 40.7128, lng: -74.0060 }, // New York by default
+        });
+
+        // Set up the search box
+        const input = document.getElementById('pac-input');
+        const searchBox = new google.maps.places.SearchBox(input);
+        
+        // Bias the SearchBox results towards current map bounds.
+        map.addListener('bounds_changed', () => {
+          searchBox.setBounds(map.getBounds());
+        });
+
+        let markers = [];
+        searchBox.addListener('places_changed', () => {
+          const places = searchBox.getPlaces();
+          if (places.length === 0) return;
+
+          // Clear out the old markers.
+          markers.forEach(marker => marker.setMap(null));
+          markers = [];
+
+          const bounds = new google.maps.LatLngBounds();
+          places.forEach(place => {
+            if (!place.geometry || !place.geometry.location) return;
+
+            const marker = new google.maps.Marker({
+              map: map,
+              position: place.geometry.location,
+            });
+
+            // Send the lat, lng data back to Retool using postMessage
+            window.parent.postMessage(
+              {
+                lat: place.geometry.location.lat(),
+                lng: place.geometry.location.lng(),
+              },
+              "*"
+            );
+
+            if (place.geometry.viewport) {
+              bounds.union(place.geometry.viewport);
+            } else {
+              bounds.extend(place.geometry.location);
+            }
+          });
+          map.fitBounds(bounds);
+        });
+
+        // Handle clicks on the map and place a marker
+        let marker;
+        map.addListener('click', (e) => {
+          const lat = e.latLng.lat();
+          const lng = e.latLng.lng();
+
+          if (marker) marker.setMap(null);
+          marker = new google.maps.Marker({
+            position: { lat, lng },
+            map: map,
+          });
+
+          // Send the lat, lng data back to Retool using postMessage
+          window.parent.postMessage({ lat, lng }, "*");
+        });
+      }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQB4j28piebvwsV_TT0vnrCy_qLQqfpY4&libraries=places&callback=initMap" async defer></script>
+  </body>
+</html>
