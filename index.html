@@ -92,10 +92,11 @@
 
             // Send the lat, lng data back to Retool using postMessage
             console.log('Current origin:', window.location.origin);
-            console.log('Parent origin:', window.parent.location.origin);
 
             // Send a message to the parent (Retool) with specific origin
-            window.parent.postMessage({ lat, lng }, window.parent.location.origin);
+            // Replace with your Retool app's domain
+            window.parent.postMessage({ lat, lng }, "https://headout.tryretool.com");
+
 
         });
 
