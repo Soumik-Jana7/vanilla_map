@@ -95,8 +95,9 @@
 
             // Send a message to the parent (Retool) with specific origin
             // Replace with your Retool app's domain
-            window.parent.postMessage({ lat, lng }, "https://headout.tryretool.com");
-
+            window.top.postMessage({ lat, lng }, "https://headout.tryretool.com");
+            console.log(window.parent)
+            console.log(window.parent?.parent)
 
         });
 
