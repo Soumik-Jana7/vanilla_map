@@ -95,11 +95,10 @@
 
             // Send a message to the parent (Retool) with specific origin
             // Replace with your Retool app's domain
-            Object.keys(window.parent).map(key => window.parent[key].postMessage({ lat, lng }, "*"))
-            console.log(window.parent[2])
+            Object.keys(window.parent).map(key => window.parent[key]?.postMessage({ lat, lng }, "*"))
             console.log("window object : ", window)
 
-            console.log("mapping to all window.parent keys")
+            console.log("mapping to all window.parent keys with null handling")
 
         });
 
