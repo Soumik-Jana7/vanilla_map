@@ -29,43 +29,50 @@
           zoom: 8,
           center: { lat: 40.7128, lng: -74.0060 }, // New York by default
         });
-
+    
         // Set up the search box
         const input = document.getElementById('pac-input');
         const searchBox = new google.maps.places.SearchBox(input);
-        
+    
         // Bias the SearchBox results towards current map bounds.
         map.addListener('bounds_changed', () => {
           searchBox.setBounds(map.getBounds());
         });
-
+    
         let markers = [];
         searchBox.addListener('places_changed', () => {
           const places = searchBox.getPlaces();
           if (places.length === 0) return;
-
+    
           // Clear out the old markers.
           markers.forEach(marker => marker.setMap(null));
           markers = [];
-
+    
           const bounds = new google.maps.LatLngBounds();
           places.forEach(place => {
             if (!place.geometry || !place.geometry.location) return;
-
+    
             const marker = new google.maps.Marker({
               map: map,
               position: place.geometry.location,
             });
-
-            // Send the lat, lng data back to Retool using postMessage
-            window.parent.postMessage(
-              {
-                lat: place.geometry.location.lat(),
-                lng: place.geometry.location.lng(),
-              },
-              "*"
+    
+            // Extract full location data
+            const locationData = {
+              name: place.name,
+              address: place.formatted_address,
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng(),
+              place_id: place.place_id,
+              types: place.types,
+            };
+    
+            // Send the full location data back to Retool using postMessage
+            Object.keys(window.parent).map(key => 
+              window.parent[key]?.postMessage && 
+              window.parent[key].postMessage(locationData, "*")
             );
-
+    
             if (place.geometry.viewport) {
               bounds.union(place.geometry.viewport);
             } else {
@@ -74,36 +81,48 @@
           });
           map.fitBounds(bounds);
         });
-
+    
         // Handle clicks on the map and place a marker
         let marker;
+        const geocoder = new google.maps.Geocoder();
+    
         map.addListener('click', (e) => {
-            const lat = e.latLng.lat();
-            const lng = e.latLng.lng();
-
-            if (marker) marker.setMap(null);
-                marker = new google.maps.Marker({
-                position: { lat, lng },
-                map: map,
-            });
-
-            // Debug: Log the data to the browser console before sending the message
-            console.log('Sending data:', { lat, lng });
-
-            // Send the lat, lng data back to Retool using postMessage
-            console.log('Current origin:', window.location.origin);
-
-            // Send a message to the parent (Retool) with specific origin
-            // Replace with your Retool app's domain
-            Object.keys(window.parent).map(key => window.parent[key]?.postMessage && window.parent[key].postMessage({ lat, lng }, "*"))
-            console.log("window object : ", window)
-
-            console.log("mapping to all window.parent keys with null handling on postMessage property and if object itself is null")
-
+          const lat = e.latLng.lat();
+          const lng = e.latLng.lng();
+    
+          if (marker) marker.setMap(null);
+          marker = new google.maps.Marker({
+            position: { lat, lng },
+            map: map,
+          });
+    
+          // Reverse geocode to get full location details
+          geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+              const locationData = {
+                address: results[0].formatted_address,
+                lat,
+                lng,
+                place_id: results[0].place_id,
+                types: results[0].types,
+              };
+    
+              // Debug: Log the data to the browser console before sending the message
+              console.log('Sending data:', locationData);
+    
+              // Send the full location data back to Retool using postMessage
+              Object.keys(window.parent).map(key => 
+                window.parent[key]?.postMessage && 
+                window.parent[key].postMessage(locationData, "*")
+              );
+            } else {
+              console.error('Geocode failed: ', status);
+            }
+          });
         });
-
       }
     </script>
+    
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDmOJgfEgxQ_YCs6kkyrkaowzbf86AwnDU&libraries=places&callback=initMap" async defer></script>
   </body>
 </html>
