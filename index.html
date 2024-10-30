@@ -3,21 +3,23 @@
   <head>
     <title>Google Maps with Search and Markers</title>
     <style>
-      #map {
-        height: 90%;
-        margin : 10px;
-        border-radius: 4px;
-      }
       html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* Prevents scrolling */
+      }
+
+      #map {
+          height: 90vh; /* Set height relative to the viewport */
+          margin: 10px;
+          border-radius: 4px;
       }
       #pac-input {
-        margin-top: 15px;
-        margin-bottom: 15px;
-        margin-left: 25px;
-        padding: 12px 20px;
+        margin-top: 7px;
+        margin-bottom: 7px;
+        margin-left: 10px;
+        padding: 8px 14px;
         font-size: 18px;
         background-color: #fef2fd;
         color: #333;
