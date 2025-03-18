@@ -4,10 +4,10 @@
     <title>Google Maps with Search and Markers</title>
     <style>
       html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden; /* Prevents scrolling */
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Prevents scrolling */
       }
 
       #map {
@@ -119,13 +119,39 @@
           // Reverse geocode to get full location details
           geocoder.geocode({ location: { lat, lng } }, (results, status) => {
             if (status === 'OK' && results[0]) {
+              const addressComponents = results[0].address_components;
+              let addressLine1 = '', addressLine2 = '', city = '', zipcode = '', country = '';
+              
+              addressComponents.forEach(component => {
+                if (component.types.includes("street_address")) {
+                  addressLine1 = component.long_name;
+                }
+                if (component.types.includes("route")) {
+                  addressLine2 = component.long_name;
+                }
+                if (component.types.includes("locality")) {
+                  city = component.long_name;
+                }
+                if (component.types.includes("postal_code")) {
+                  zipcode = component.long_name;
+                }
+                if (component.types.includes("country")) {
+                  country = component.long_name;
+                }
+              });
+
               const locationData = {
-                name : results[0]?.name,
+                name: results[0]?.name,
                 address: results[0].formatted_address,
                 lat,
                 lng,
                 place_id: results[0].place_id,
                 types: results[0].types,
+                addressLine1,
+                addressLine2,
+                city,
+                zipcode,
+                country
               };
     
               // Debug: Log the data to the browser console before sending the message
